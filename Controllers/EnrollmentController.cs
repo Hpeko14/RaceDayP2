@@ -5,11 +5,11 @@ using RaceDayAPI.Helpers;
 using RaceDayAPI.Models;
 
 namespace RaceDayAPI.Controllers
-{
+{//Start of namespace
     [ApiController]
     [Route("api/[controller]")]
     public class EnrollmentController : ControllerBase
-    {
+    {//Start of class
         private readonly RaceDayContext _context;
 
         public EnrollmentController(RaceDayContext context)
@@ -85,7 +85,7 @@ namespace RaceDayAPI.Controllers
         [HttpPut("update/{id}")]
         [RoleAuthorize("participant")]
         public IActionResult Update(int id, int categoryId)
-        {
+        {//Start of Update method
             var sessionUserId = HttpContext.Session.GetInt32("UserId");
             if (sessionUserId == null) return Unauthorized();
 
@@ -105,6 +105,6 @@ namespace RaceDayAPI.Controllers
             enrollment.CategoryId = categoryId;
             _context.SaveChanges();
             return Ok(new { message = "Enrollment updated successfully", enrollment });
-        }
-    }
-}
+        }//End of Update method
+    }//End of class
+}//End of namespace
