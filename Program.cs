@@ -5,11 +5,11 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>
-{
+{// Configure session options
     options.IdleTimeout = TimeSpan.FromMinutes(30);
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
-});
+});// Configure session options
 
 
 // Add DbContext
@@ -26,9 +26,9 @@ var app = builder.Build();
 
 // Apply EF Core migrations at startup (will create or update the database schema)
 using (var scope = app.Services.CreateScope())
-{
+{// Create a scope to get the DbContext
     try
-    {
+    {// Get the DbContext and apply migrations
         var db = scope.ServiceProvider.GetRequiredService<RaceDayContext>();
         db.Database.Migrate();
     }
