@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using RaceDayAPI.Data;
 using RaceDayAPI.Helpers;
 using RaceDayAPI.Models;
@@ -16,7 +17,7 @@ namespace RaceDayAPI.Controllers
             _context = context;
         }
 
-        /// <summary>Creates a new event (organiser only).</summary>
+        /// <summary>Creates an event owned by the logged-in organiser.</summary>
         [HttpPost("create")]
         [RoleAuthorize("organiser")]
         public IActionResult Create(string title, DateTime date, string location)
@@ -24,7 +25,17 @@ namespace RaceDayAPI.Controllers
             if (string.IsNullOrWhiteSpace(title) || string.IsNullOrWhiteSpace(location))
                 return BadRequest(new { message = "Title and location are required." });
 
-            var ev = new Event { Title = title.Trim(), Date = date, Location = location.Trim() };
+            var organiserId = HttpContext.Session.GetInt32("UserId");
+            if (organiserId == null) return Unauthorized();
+
+            var ev = new Event
+            {
+                Title = title.Trim(),
+                Date = date,
+                Location = location.Trim(),
+                OrganiserId = organiserId.Value
+            };
+
             _context.Events.Add(ev);
             _context.SaveChanges();
             return Ok(ev);
@@ -64,13 +75,16 @@ namespace RaceDayAPI.Controllers
             return Ok(new { message = "Event updated successfully", ev });
         }
 
-        /// <summary>Deletes an event (organiser only).</summary>
+        /// <summary>Deletes an event (organiser only). Fails if it still has categories or routes.</summary>
         [HttpDelete("delete/{id}")]
         [RoleAuthorize("organiser")]
         public IActionResult Delete(int id)
         {
             var ev = _context.Events.Find(id);
             if (ev == null) return NotFound();
+
+            if (_context.Categories.Any(c => c.EventId == id) || _context.Routes.Any(r => r.EventId == id))
+                return Conflict(new { message = "Cannot delete an event that has categories or routes." });
 
             _context.Events.Remove(ev);
             _context.SaveChanges();

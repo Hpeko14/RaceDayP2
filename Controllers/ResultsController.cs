@@ -49,15 +49,16 @@ namespace RaceDayAPI.Controllers
             return Ok(_context.Results.ToList());
         }
 
-        /// <summary>Returns all results for a specific event.</summary>
+        /// <summary>Returns all results for an event, ordered by position.</summary>
         [HttpGet("event/{eventId}")]
         public IActionResult GetByEvent(int eventId)
         {
-            var results = _context.Results
-                .Where(r => _context.Enrollments
-                    .Any(e => e.Id == r.EnrollmentId && e.EventId == eventId))
-                .OrderBy(r => r.Position)
-                .ToList();
+            var results = (from r in _context.Results
+                           join e in _context.Enrollments on r.EnrollmentId equals e.Id
+                           join c in _context.Categories on e.CategoryId equals c.Id
+                           where c.EventId == eventId
+                           orderby r.Position
+                           select r).ToList();
 
             return Ok(results);
         }

@@ -1,9 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using RaceDayAPI.Data;
 using RaceDayAPI.Helpers;
 using RaceDayAPI.Models;
-
-
 
 namespace RaceDayAPI.Controllers
 {
@@ -24,10 +23,10 @@ namespace RaceDayAPI.Controllers
             return role != null && role.Trim().ToLowerInvariant() == "organiser";
         }
 
-        /// <summary>Enrols a user in an event. Participants can only enrol themselves.</summary>
+        /// <summary>Enrols a user in a category. Participants can only enrol themselves.</summary>
         [HttpPost("enroll")]
         [RoleAuthorize("participant")]
-        public IActionResult Enroll(int userId, int eventId)
+        public IActionResult Enroll(int userId, int categoryId)
         {
             var sessionUserId = HttpContext.Session.GetInt32("UserId");
             if (sessionUserId == null) return Unauthorized();
@@ -35,13 +34,19 @@ namespace RaceDayAPI.Controllers
             if (sessionUserId.Value != userId && !IsOrganiser())
                 return Forbid();
 
-            if (!_context.Events.Any(e => e.Id == eventId))
-                return NotFound(new { message = "Event not found." });
+            if (!_context.Categories.Any(c => c.Id == categoryId))
+                return NotFound(new { message = "Category not found." });
 
-            if (_context.Enrollments.Any(e => e.UserId == userId && e.EventId == eventId))
-                return Conflict(new { message = "User is already enrolled in this event." });
+            if (_context.Enrollments.Any(e => e.UserId == userId && e.CategoryId == categoryId))
+                return Conflict(new { message = "User is already enrolled in this category." });
 
-            var enrollment = new Enrollment { UserId = userId, EventId = eventId };
+            var enrollment = new Enrollment
+            {
+                UserId = userId,
+                CategoryId = categoryId,
+                RegistrationDate = DateTime.Today
+            };
+
             _context.Enrollments.Add(enrollment);
             _context.SaveChanges();
             return Ok(enrollment);
@@ -68,15 +73,18 @@ namespace RaceDayAPI.Controllers
             if (enrollment.UserId != sessionUserId.Value && !IsOrganiser())
                 return Forbid();
 
+            if (_context.Results.Any(r => r.EnrollmentId == id))
+                return Conflict(new { message = "Cannot cancel an enrollment that already has a result." });
+
             _context.Enrollments.Remove(enrollment);
             _context.SaveChanges();
             return Ok(new { message = "Enrollment cancelled successfully" });
         }
 
-        /// <summary>Moves an enrollment to another event. Only the owner or an organiser may do this.</summary>
+        /// <summary>Moves an enrollment to another category. Only the owner or an organiser may do this.</summary>
         [HttpPut("update/{id}")]
         [RoleAuthorize("participant")]
-        public IActionResult Update(int id, int eventId)
+        public IActionResult Update(int id, int categoryId)
         {
             var sessionUserId = HttpContext.Session.GetInt32("UserId");
             if (sessionUserId == null) return Unauthorized();
@@ -87,14 +95,14 @@ namespace RaceDayAPI.Controllers
             if (enrollment.UserId != sessionUserId.Value && !IsOrganiser())
                 return Forbid();
 
-            if (!_context.Events.Any(e => e.Id == eventId))
-                return NotFound(new { message = "Event not found." });
+            if (!_context.Categories.Any(c => c.Id == categoryId))
+                return NotFound(new { message = "Category not found." });
 
             if (_context.Enrollments.Any(e => e.UserId == enrollment.UserId
-                                              && e.EventId == eventId && e.Id != id))
-                return Conflict(new { message = "User is already enrolled in that event." });
+                                              && e.CategoryId == categoryId && e.Id != id))
+                return Conflict(new { message = "User is already enrolled in that category." });
 
-            enrollment.EventId = eventId;
+            enrollment.CategoryId = categoryId;
             _context.SaveChanges();
             return Ok(new { message = "Enrollment updated successfully", enrollment });
         }
