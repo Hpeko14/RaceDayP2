@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using RaceDayAPI.Data;
 using RaceDayAPI.Helpers;
 using RaceDayAPI.Models;
@@ -7,70 +6,97 @@ using RaceDayAPI.Models;
 
 
 namespace RaceDayAPI.Controllers
-{// start of namespace
+{
     [ApiController]
-        [Route("api/[controller]")]
-        public class EnrollmentController : ControllerBase
-    {// start of class
+    [Route("api/[controller]")]
+    public class EnrollmentController : ControllerBase
+    {
         private readonly RaceDayContext _context;
 
-            public EnrollmentController(RaceDayContext context)
-        {// start of constructor
+        public EnrollmentController(RaceDayContext context)
+        {
             _context = context;
-        }// end of constructor
+        }
 
+        private bool IsOrganiser()
+        {
+            var role = HttpContext.Session.GetString("Role");
+            return role != null && role.Trim().ToLowerInvariant() == "organiser";
+        }
+
+        /// <summary>Enrols a user in an event. Participants can only enrol themselves.</summary>
         [HttpPost("enroll")]
-            [RoleAuthorize("participant")]
-            public IActionResult Enroll(int userId, int eventId)
-        {// start of Enroll method
-         // Ensure the caller is the same user or an organiser
+        [RoleAuthorize("participant")]
+        public IActionResult Enroll(int userId, int eventId)
+        {
             var sessionUserId = HttpContext.Session.GetInt32("UserId");
-                var sessionRole = HttpContext.Session.GetString("Role");
+            if (sessionUserId == null) return Unauthorized();
 
-                if (sessionUserId == null)
-                    return Unauthorized();
+            if (sessionUserId.Value != userId && !IsOrganiser())
+                return Forbid();
 
-                // Allow if the user is enrolling themselves or if the caller is an organiser
-                if (sessionUserId.Value != userId && (sessionRole == null || sessionRole.Trim().ToLowerInvariant() != "organiser"))
-                    return Forbid();
+            if (!_context.Events.Any(e => e.Id == eventId))
+                return NotFound(new { message = "Event not found." });
 
-                var enrollment = new Enrollment { UserId = userId, EventId = eventId };
-                _context.Enrollments.Add(enrollment);
-                _context.SaveChanges();
-                return Ok(enrollment);
-        }// end of Enroll method
+            if (_context.Enrollments.Any(e => e.UserId == userId && e.EventId == eventId))
+                return Conflict(new { message = "User is already enrolled in this event." });
 
+            var enrollment = new Enrollment { UserId = userId, EventId = eventId };
+            _context.Enrollments.Add(enrollment);
+            _context.SaveChanges();
+            return Ok(enrollment);
+        }
+
+        /// <summary>Returns all enrollments.</summary>
         [HttpGet("all")]
-            public IActionResult GetAll()
-        {// start of GetAll method
-            var enrollments = _context.Enrollments.ToList();
-                return Ok(enrollments);
-        }// end of GetAll method
+        public IActionResult GetAll()
+        {
+            return Ok(_context.Enrollments.ToList());
+        }
+
+        /// <summary>Cancels an enrollment. Only the owner or an organiser may do this.</summary>
         [HttpDelete("delete/{id}")]
         [RoleAuthorize("participant")]
         public IActionResult Delete(int id)
-        {// start of Delete method
+        {
+            var sessionUserId = HttpContext.Session.GetInt32("UserId");
+            if (sessionUserId == null) return Unauthorized();
+
             var enrollment = _context.Enrollments.Find(id);
             if (enrollment == null) return NotFound();
+
+            if (enrollment.UserId != sessionUserId.Value && !IsOrganiser())
+                return Forbid();
 
             _context.Enrollments.Remove(enrollment);
             _context.SaveChanges();
             return Ok(new { message = "Enrollment cancelled successfully" });
-        }// end of Delete method
+        }
+
+        /// <summary>Moves an enrollment to another event. Only the owner or an organiser may do this.</summary>
         [HttpPut("update/{id}")]
         [RoleAuthorize("participant")]
         public IActionResult Update(int id, int eventId)
-        {// start of Update method
+        {
+            var sessionUserId = HttpContext.Session.GetInt32("UserId");
+            if (sessionUserId == null) return Unauthorized();
+
             var enrollment = _context.Enrollments.Find(id);
             if (enrollment == null) return NotFound();
+
+            if (enrollment.UserId != sessionUserId.Value && !IsOrganiser())
+                return Forbid();
+
+            if (!_context.Events.Any(e => e.Id == eventId))
+                return NotFound(new { message = "Event not found." });
+
+            if (_context.Enrollments.Any(e => e.UserId == enrollment.UserId
+                                              && e.EventId == eventId && e.Id != id))
+                return Conflict(new { message = "User is already enrolled in that event." });
 
             enrollment.EventId = eventId;
             _context.SaveChanges();
             return Ok(new { message = "Enrollment updated successfully", enrollment });
-        }// end of Update method
-
-    }// end of class
-}// end of namespace
-
-
-
+        }
+    }
+}
