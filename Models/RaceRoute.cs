@@ -2,10 +2,10 @@
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace RaceDayAPI.Models
-{
+{// start of namespace
     [Table("Routes")]
     public class RaceRoute
-    {
+    {// start of class
         [Key]
         [Column("RouteID")]
         public int Id { get; set; }
@@ -19,5 +19,5 @@ namespace RaceDayAPI.Models
 
         [MaxLength(200)]
         public string? WeatherInfo { get; set; }
-    }
-}
+    }// end of class
+}// end of namespace
