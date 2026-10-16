@@ -46,22 +46,22 @@ namespace RaceDayAPI.Controllers
                 var ev = _context.Events.Find(id);
                 if (ev == null) return NotFound();
                 return Ok(ev);
-            }
+        }// end of GetById method
         [HttpDelete("delete/{id}")]
         [RoleAuthorize("organiser")]
         public IActionResult Delete(int id)
-        {
+        {// Delete an event by ID
             var ev = _context.Events.Find(id);
             if (ev == null) return NotFound();
 
             _context.Events.Remove(ev);
             _context.SaveChanges();
             return Ok(new { message = "Event deleted successfully" });
-        }
+        }// end of Delete method
         [HttpPut("update/{id}")]
         [RoleAuthorize("organiser")]
         public IActionResult Update(int id, string title, DateTime date, string location)
-        {
+        {// Update an existing event
             var ev = _context.Events.Find(id);
             if (ev == null) return NotFound();
 
@@ -71,10 +71,10 @@ namespace RaceDayAPI.Controllers
 
             _context.SaveChanges();
             return Ok(new { message = "Event updated successfully", ev });
-        }
+        }// end of Update method
 
-    }
-}
+    }// end of class
+}// end of namespace
 
 
 
