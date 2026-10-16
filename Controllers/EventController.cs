@@ -5,11 +5,11 @@ using RaceDayAPI.Helpers;
 using RaceDayAPI.Models;
 
 namespace RaceDayAPI.Controllers
-{
+{//Start of namespace
     [ApiController]
     [Route("api/[controller]")]
     public class EventController : ControllerBase
-    {
+    {//Start of class
         private readonly RaceDayContext _context;
 
         public EventController(RaceDayContext context)
@@ -90,5 +90,5 @@ namespace RaceDayAPI.Controllers
             _context.SaveChanges();
             return Ok(new { message = "Event deleted successfully" });
         }
-    }
-}
+    }//End of class
+}//End of namespace
