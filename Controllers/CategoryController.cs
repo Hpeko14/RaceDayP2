@@ -82,5 +82,6 @@ namespace RaceDayAPI.Controllers
             _context.SaveChanges();
             return Ok(new { message = "Category deleted successfully" });
         }
+
     }//End of class
 }//End of namespace
