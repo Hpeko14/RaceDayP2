@@ -1,0 +1,67 @@
+﻿@using RaceDayMVC.Models
+@model DashboardVm
+@{
+    ViewData["Title"] = "Dashboard";
+}
+<div class="rd-hero mb-4">
+    <h1 class="rd-heading text-white mb-1">Organiser dashboard</h1>
+    <p class="text-white-50 mb-0">Your events, enrolments and what is coming up next.</p>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-4"><div class="rd-stat"><small>Events created</small><strong>@Model.Events.Count</strong></div></div>
+    <div class="col-md-4"><div class="rd-stat"><small>Total enrolments</small><strong>@Model.TotalEnrolments</strong></div></div>
+    <div class="col-md-4"><div class="rd-stat"><small>Upcoming events</small><strong>@Model.Upcoming.Count</strong></div></div>
+</div>
+
+@if (Model.Events.Count == 0)
+{
+    <div class="text-center rd-empty py-5">
+        <div class="rd-big-icon">🏁</div>
+        <h2 class="rd-heading h4">You have not created any events yet</h2>
+        <a asp-action="CreateEvent" class="btn btn-rd">Create your first event</a>
+    </div>
+}
+else
+{
+    <div class="row g-4">
+        <div class="col-lg-7">
+            <h2 class="rd-heading h4">All my events</h2>
+            <div class="table-responsive rd-table-wrap">
+                <table class="table align-middle mb-0">
+                    <thead><tr><th>Event</th><th>Date</th><th class="text-end">Enrolments</th><th></th></tr></thead>
+                    <tbody>
+                        @foreach (var e in Model.Events.OrderByDescending(e => e.Date))
+                        {
+                            <tr>
+                                <td>@e.Title</td>
+                                <td>@Fmt.Date(e.Date)</td>
+                                <td class="text-end"><span class="badge rd-count">@e.EnrollmentCount</span></td>
+                                <td class="text-end"><a asp-action="Enrolments" asp-route-eventId="@e.EventID" class="btn btn-sm btn-rd-outline-dark">View</a></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="col-lg-5">
+            <h2 class="rd-heading h4">Upcoming dates</h2>
+            @if (Model.Upcoming.Count == 0)
+            {
+                <p class="text-muted">No upcoming events. <a asp-action="CreateEvent">Create one</a>.</p>
+            }
+            else
+            {
+                <ul class="list-group rd-upcoming">
+                    @foreach (var e in Model.Upcoming)
+                    {
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span><strong>@e.Title</strong><br /><small class="text-muted">@e.Location</small></span>
+                            <span class="rd-date-pill">@Fmt.Date(e.Date)</span>
+                        </li>
+                    }
+                </ul>
+            }
+        </div>
+    </div>
+}

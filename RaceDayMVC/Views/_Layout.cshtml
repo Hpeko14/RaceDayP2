@@ -1,0 +1,88 @@
+﻿@{
+    var role = Context.Session.GetString("Role");
+    var userName = Context.Session.GetString("Name");
+    var controllerName = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+    var actionName = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
+    string Active(string controller, string action = "") =>
+        controllerName == controller && (action == "" || actionName == action) ? "active" : "";
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@ViewData["Title"] - RaceDay</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark rd-navbar">
+        <div class="container">
+            <a class="navbar-brand rd-brand" asp-controller="Home" asp-action="Index">RACE<span>DAY</span></a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="mainNav">
+                <ul class="navbar-nav me-auto">
+                    @if (role == "Organiser")
+                    {
+                        <li class="nav-item"><a class="nav-link @Active("Organiser", "Dashboard")" asp-controller="Organiser" asp-action="Dashboard">Dashboard</a></li>
+                        <li class="nav-item"><a class="nav-link @Active("Organiser", "Events")" asp-controller="Organiser" asp-action="Events">My Events</a></li>
+                        <li class="nav-item"><a class="nav-link @Active("Organiser", "CreateEvent")" asp-controller="Organiser" asp-action="CreateEvent">Create Event</a></li>
+                        <li class="nav-item"><a class="nav-link @Active("Profile")" asp-controller="Profile" asp-action="Index">Profile</a></li>
+                    }
+                    else if (role == "Participant")
+                    {
+                        <li class="nav-item"><a class="nav-link @Active("Home", "Index")" asp-controller="Home" asp-action="Index">Events</a></li>
+                        <li class="nav-item"><a class="nav-link @Active("Participant", "MyEvents")" asp-controller="Participant" asp-action="MyEvents">My Events</a></li>
+                        <li class="nav-item"><a class="nav-link @Active("Participant", "MyResults")" asp-controller="Participant" asp-action="MyResults">My Results</a></li>
+                        <li class="nav-item"><a class="nav-link @Active("Profile")" asp-controller="Profile" asp-action="Index">Profile</a></li>
+                    }
+                </ul>
+                <div class="d-flex align-items-center gap-2">
+                    @if (role is not null)
+                    {
+                        <span class="text-white-50 small">@userName <span class="badge rd-role-badge">@role</span></span>
+                        <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
+                            <button type="submit" class="btn btn-sm btn-rd-outline">Log out</button>
+                        </form>
+                    }
+                    else
+                    {
+                        <a class="btn btn-sm btn-rd-outline" asp-controller="Account" asp-action="Login">Log in</a>
+                        <a class="btn btn-sm btn-rd" asp-controller="Account" asp-action="Register">Register</a>
+                    }
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container rd-main">
+        @if (TempData["Success"] is string success)
+        {
+            <div class="alert alert-success alert-dismissible fade show" role="alert">@success<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>
+        }
+        @if (TempData["Error"] is string error)
+        {
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">@error<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>
+        }
+        @if (ViewBag.LoadError is string loadError)
+        {
+            <div class="alert alert-warning" role="alert">@loadError</div>
+        }
+        @RenderBody()
+    </main>
+
+    <footer class="rd-footer">
+        <div class="container d-flex justify-content-between flex-wrap">
+            <span>RACE<span class="text-rd">DAY</span> &middot; Every finish line starts here.</span>
+            <span>&copy; @DateTime.Now.Year RaceDay</span>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

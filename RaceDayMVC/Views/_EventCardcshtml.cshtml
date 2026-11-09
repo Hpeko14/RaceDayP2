@@ -1,0 +1,13 @@
+﻿@model EventItem
+<div class="card rd-card h-100">
+    <div class="rd-card-img rd-placeholder"><span>@Fmt.TypeIcon(Model.EventType)</span></div>
+    <div class="card-body">
+        <span class="badge rd-type">@Model.EventType</span>
+        <h5 class="card-title mt-2">@Model.Title</h5>
+        <p class="text-muted small mb-1">@Fmt.Date(Model.Date)</p>
+        <p class="text-muted small mb-0">@Model.Location &middot; @Fmt.Distance(Model.Distance)</p>
+    </div>
+    <div class="card-footer bg-transparent border-0 pb-3">
+        <a asp-controller="Home" asp-action="Details" asp-route-id="@Model.EventID" class="btn btn-rd w-100">View event</a>
+    </div>
+</div>

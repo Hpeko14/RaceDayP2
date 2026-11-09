@@ -1,0 +1,45 @@
+﻿@model ProfileVm
+@{
+    ViewData["Title"] = "My profile";
+}
+<h1 class="rd-heading">My profile</h1>
+<div class="row g-4">
+    <div class="col-md-4">
+        <div class="card rd-card text-center p-4">
+            <div class="rd-avatar rd-avatar-fallback mx-auto">@Fmt.Initial(Model.Name)</div>
+            <h2 class="h5 mt-3 mb-0">@Model.Name</h2>
+            <p class="text-muted small mb-0">@Model.Role</p>
+        </div>
+    </div>
+    <div class="col-md-8">
+        <div class="card rd-card p-4">
+            <h2 class="rd-heading h4">Personal information</h2>
+            <form asp-action="Update" method="post" novalidate>
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2"></div>
+                <div class="mb-3">
+                    <label asp-for="Name" class="form-label">Name</label>
+                    <input asp-for="Name" class="form-control" />
+                    <span asp-validation-for="Name" class="text-danger small"></span>
+                </div>
+                <div class="mb-3">
+                    <label asp-for="Email" class="form-label">Email</label>
+                    <input asp-for="Email" class="form-control" />
+                    <span asp-validation-for="Email" class="text-danger small"></span>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="NewPassword" class="form-label">New password (optional)</label>
+                        <input asp-for="NewPassword" type="password" class="form-control" autocomplete="new-password" />
+                        <span asp-validation-for="NewPassword" class="text-danger small"></span>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="ConfirmNewPassword" class="form-label">Confirm new password</label>
+                        <input asp-for="ConfirmNewPassword" type="password" class="form-control" autocomplete="new-password" />
+                        <span asp-validation-for="ConfirmNewPassword" class="text-danger small"></span>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-rd">Save changes</button>
+            </form>
+        </div>
+    </div>
+</div>

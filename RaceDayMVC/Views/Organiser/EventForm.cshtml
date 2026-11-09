@@ -1,0 +1,55 @@
+﻿@model EventFormVm
+@{
+    var isNew = Model.EventID == 0;
+    ViewData["Title"] = isNew ? "Create event" : "Edit event";
+    var formAction = isNew ? "CreateEvent" : "EditEvent";
+    int? routeId = isNew ? null : Model.EventID;
+}
+<h1 class="rd-heading">@ViewData["Title"]</h1>
+<div class="card rd-card p-4">
+    <form asp-action="@formAction" asp-route-id="@routeId" method="post" novalidate>
+        <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2"></div>
+        <div class="row">
+            <div class="col-md-8 mb-3">
+                <label asp-for="Title" class="form-label">Event name</label>
+                <input asp-for="Title" class="form-control" />
+                <span asp-validation-for="Title" class="text-danger small"></span>
+            </div>
+            <div class="col-md-4 mb-3">
+                <label asp-for="EventType" class="form-label">Event type</label>
+                <select asp-for="EventType" class="form-select">
+                    <option value="Run">Run</option>
+                    <option value="Walk">Walk</option>
+                    <option value="Cycle">Cycle</option>
+                </select>
+                <span asp-validation-for="EventType" class="text-danger small"></span>
+            </div>
+        </div>
+        <div class="mb-3">
+            <label asp-for="Description" class="form-label">Description</label>
+            <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+            <span asp-validation-for="Description" class="text-danger small"></span>
+        </div>
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <label asp-for="Date" class="form-label">Date</label>
+                <input asp-for="Date" type="date" class="form-control" />
+                <span asp-validation-for="Date" class="text-danger small"></span>
+            </div>
+            <div class="col-md-5 mb-3">
+                <label asp-for="Location" class="form-label">Location</label>
+                <input asp-for="Location" class="form-control" />
+                <span asp-validation-for="Location" class="text-danger small"></span>
+            </div>
+            <div class="col-md-3 mb-3">
+                <label asp-for="Distance" class="form-label">Distance (km)</label>
+                <input asp-for="Distance" type="number" step="0.01" class="form-control" />
+                <span asp-validation-for="Distance" class="text-danger small"></span>
+            </div>
+        </div>
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-rd">@(isNew ? "Create event" : "Save changes")</button>
+            <a asp-action="Events" class="btn btn-rd-outline-dark">Cancel</a>
+        </div>
+    </form>
+</div>
