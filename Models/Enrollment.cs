@@ -16,6 +16,9 @@ namespace RaceDayAPI.Models
         [Column("CategoryID")]
         public int CategoryId { get; set; }
 
+        [Column("EventID")]
+        public int EventId { get; set; }
+
         [Column(TypeName = "date")]
         public DateTime RegistrationDate { get; set; }
     }
